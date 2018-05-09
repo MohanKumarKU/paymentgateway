@@ -369,8 +369,8 @@ $(document).ready(function() {
 
 </head>
 <body>
-
 <div class="background"></div>
+<img src="resources/images/bank.jpg" alt="" style="position: relative;">
 <div class="container">
 	<div class="row">
 		<div class="modalbox error col-sm-8 col-md-6 col-lg-5 center animate">
