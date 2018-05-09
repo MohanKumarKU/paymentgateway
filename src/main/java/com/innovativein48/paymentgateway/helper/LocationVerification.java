@@ -1,5 +1,6 @@
 package com.innovativein48.paymentgateway.helper;
 
+import java.sql.Timestamp;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,13 +8,12 @@ import org.springframework.stereotype.Service;
 
 import com.innovativein48.paymentgateway.bean.Reason;
 import com.innovativein48.paymentgateway.bean.Status;
-import com.innovativein48.paymentgateway.bean.TransactionType;
 import com.innovativein48.paymentgateway.dto.ReservationRequest;
-import com.innovativein48.paymentgateway.entities.TransactionLogs;
+import com.innovativein48.paymentgateway.entities.Transactionlog;
 import com.innovativein48.paymentgateway.repos.TransactionLogRepository;
 
-@Service	
-public class LocationVerification {
+@Service
+public class LocationVerification implements VerificationService {
 	private static final double MAX_KM = 50;
 
 	private static double devLat = Double.MIN_VALUE;
@@ -21,16 +21,13 @@ public class LocationVerification {
 
 	private static double tranLat = Double.MIN_VALUE;
 	private static double tranLong = Double.MIN_VALUE;
-	private final ReservationRequest reservationRequest;
 
 	@Autowired
-    TransactionLogRepository transactionLogRepo;
-	
-	public LocationVerification(final ReservationRequest reservationRequest) {
-		this.reservationRequest = reservationRequest;
-	}
+	TransactionLogRepository transactionLogRepo;
 
-	public Status verifyLocation(final Map<String, String> deviceLocation, final Map<String, String> transactionLocation) {
+	@Override
+	public Transactionlog verifyLocation(final Map<String, String> deviceLocation,
+			final Map<String, String> transactionLocation, final ReservationRequest reservationRequest) {
 
 		for (Map.Entry<String, String> deviceLocat : deviceLocation.entrySet()) {
 			devLat = Double.valueOf(deviceLocat.getKey());
@@ -43,46 +40,41 @@ public class LocationVerification {
 		}
 
 		final double theta = devLong - tranLong;
-		
+
 		double dist = Math.sin(deg2rad(devLat)) * Math.sin(deg2rad(tranLat))
 				+ Math.cos(deg2rad(devLat)) * Math.cos(deg2rad(tranLat)) * Math.cos(deg2rad(theta));
-		
+
 		dist = rad2deg(Math.acos(dist)) * 60 * 1.1515 * 1.609344;
 
-		TransactionLogs transactionLogs = prepareTransactionLogs(reservationRequest, devLat, devLong, tranLat,
-				tranLong);
+		Transactionlog transactionLogs = prepareTransactionLogs(reservationRequest, devLat, devLong, tranLat, tranLong);
 
 		if (dist > MAX_KM) {
 
-			transactionLogs.setReason(Reason.GIOLOCATIONMISMATCH);
-			transactionLogs.setStatus(Status.FAILURE);
-			transactionLogRepo.save(transactionLogs);
+			transactionLogs.setReason("OTHER");
+			transactionLogs.setStatus("FAILURE");
+			Transactionlog logFailure = transactionLogRepo.save(transactionLogs);
 
-			return Status.FAILURE;
+			return logFailure;
 		}
 
-		transactionLogs.setStatus(Status.SUCCESS);
-		transactionLogRepo.save(transactionLogs);
+		transactionLogs.setStatus("SUCCESS");
+		Transactionlog logSuccess = transactionLogRepo.save(transactionLogs);
 
-		return Status.SUCCESS;
+		return logSuccess;
 
 	}
 
-	private TransactionLogs prepareTransactionLogs(ReservationRequest reservationRequest, double devLat, double devLong,
+	private Transactionlog prepareTransactionLogs(ReservationRequest reservationRequest, double devLat, double devLong,
 			double tranLat, double tranLong) {
-		TransactionLogs transactionLogs = new TransactionLogs();
-		transactionLogs.setAccountNumber(111111L);
-		transactionLogs.setDeviceId("qwereerrrr");
-		transactionLogs.setDevLat(devLat);
-		transactionLogs.setDevLong(devLong);
-		transactionLogs.setMerchantID("merchant111");
-		transactionLogs.setReferenceId(01010101l);
-		transactionLogs.setTimeStamp("2018-02-05 03:14:23");
-		transactionLogs.setTranLat(tranLat);
-		transactionLogs.setTranLong(tranLong);
-		transactionLogs.setTransDate("2018-02-05");
-		transactionLogs.setTransactionSource("source");
-		transactionLogs.setTranType(TransactionType.ATM);
+		Transactionlog transactionLogs = new Transactionlog();
+		transactionLogs.setAccountnumber(reservationRequest.getAccountNumber());
+		transactionLogs.setDevlat(devLat);
+		transactionLogs.setDevlong(devLong);
+		transactionLogs.setTimestamp(new Timestamp(System.currentTimeMillis()));
+		transactionLogs.setTranlat(tranLat);
+		transactionLogs.setTranlong(tranLong);
+		transactionLogs.setTransdate(java.time.LocalDate.now().toString());
+		transactionLogs.setTrantype("ATM");
 
 		return transactionLogs;
 	}
@@ -94,4 +86,5 @@ public class LocationVerification {
 	public static double rad2deg(final double rad) {
 		return (rad * 180.0 / Math.PI);
 	}
+
 }

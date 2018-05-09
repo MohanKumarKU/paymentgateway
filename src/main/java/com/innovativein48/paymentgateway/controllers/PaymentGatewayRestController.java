@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.innovativein48.paymentgateway.bean.Status;
 import com.innovativein48.paymentgateway.dto.ReservationRequest;
+import com.innovativein48.paymentgateway.entities.Transactionlog;
 import com.innovativein48.paymentgateway.entities.Users;
-import com.innovativein48.paymentgateway.helper.LocationVerification;
+import com.innovativein48.paymentgateway.helper.VerificationService;
 import com.innovativein48.paymentgateway.repos.CustomerRepository;
 import com.innovativein48.paymentgateway.xmpp.DeviceLocator;
 
@@ -21,9 +21,11 @@ import com.innovativein48.paymentgateway.xmpp.DeviceLocator;
 public class PaymentGatewayRestController {
 	@Autowired
 	CustomerRepository customerRepo;
-
+	@Autowired
+	VerificationService locationVerification;
+	
 	@RequestMapping(value = "/payment", method = RequestMethod.POST)
-	public @ResponseBody ReservationRequest doPayment(@RequestBody ReservationRequest reservationRequest ) {
+	public @ResponseBody ReservationRequest doPayment(@RequestBody ReservationRequest reservationRequest) {
 		
 		System.out.println(reservationRequest.toString());
 
@@ -34,14 +36,13 @@ public class PaymentGatewayRestController {
 		Map<String,String> transactionLocation = new HashMap<>();
 		transactionLocation.put(reservationRequest.getLatitude(), reservationRequest.getLongitude());
 		
-		LocationVerification locationVerification = new LocationVerification(reservationRequest);
-		
-		Status result = locationVerification.verifyLocation(deviceLocation, transactionLocation);
-		
+		Transactionlog result = locationVerification.verifyLocation(deviceLocation, transactionLocation,reservationRequest);
+		reservationRequest.setReferenceId(result.getReferenceid());
+		reservationRequest.setStatus(result.getStatus());
 
 		System.out.println("customer token : " + customer.getToken());
 
-		return null;
+		return reservationRequest;
 
 	}
 
@@ -50,19 +51,23 @@ public class PaymentGatewayRestController {
 
 		System.out.println("customer token :1 ");
 		System.out.println("customer token : 2");
+		
+		//Map<String,String> deviceLocation = new DeviceLocator().getLocation(null);
 
 		
 		// new DeviceLocator().getLocation("12");
 		
-		Map<String,String> deviceLocation = new HashMap<>();
-		deviceLocation.put("13.1111111", "75.11100011");
+		Map<String,String> deviceLocation1 = new HashMap<>();
+		deviceLocation1.put("13.1111111", "75.11100011");
 		
 		Map<String,String> transactionLocation = new HashMap<>();
 		transactionLocation.put("12.1111111", "76.11100011");
 		
-		LocationVerification locationVerification = new LocationVerification(null);
+		//LocationVerification locationVerification = new LocationVerification(null);
 		
-		Status result = locationVerification.verifyLocation(deviceLocation, transactionLocation);
+		ReservationRequest reqst= new ReservationRequest();
+		reqst.setAccountNumber(111l);
+		Transactionlog result = locationVerification.verifyLocation(deviceLocation1, transactionLocation,reqst);
 		
 
 		

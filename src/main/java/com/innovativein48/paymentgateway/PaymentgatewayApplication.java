@@ -10,16 +10,12 @@ import org.springframework.web.client.RestTemplate;
 import com.innovativein48.paymentgateway.controllers.PaymentGatewayRestController;
 
 @SpringBootApplication
-@ComponentScan(basePackageClasses = PaymentGatewayRestController.class)
+@ComponentScan("com.innovativein48.paymentgateway")
 public class PaymentgatewayApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(PaymentgatewayApplication.class, args);
 	}
 	
-	@Bean
-	public RestTemplate restTemplate(RestTemplateBuilder builder) {
-		return builder.build();
-	}
 	
 }

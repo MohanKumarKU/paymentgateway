@@ -7,6 +7,8 @@ public class ReservationRequest {
 	private String passengerEmail;
 	private String passengerPhone;
 
+	private Long referenceId;
+	private Long accountNumber;
 	private String nameOnTheCard;
 	private String cardNumber;
 	private String expirationMonth;
@@ -14,7 +16,24 @@ public class ReservationRequest {
 	private String securityCode;
 	private String latitude;
 	private String longitude;
-	
+	private String status;
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public Long getAccountNumber() {
+		return accountNumber;
+	}
+
+	public void setAccountNumber(Long accountNumber) {
+		this.accountNumber = accountNumber;
+	}
+
 	public Long getFlightId() {
 		return flightId;
 	}
@@ -111,13 +130,22 @@ public class ReservationRequest {
 		this.longitude = longitude;
 	}
 
+	public Long getReferenceId() {
+		return referenceId;
+	}
+
+	public void setReferenceId(Long referenceId) {
+		this.referenceId = referenceId;
+	}
+
 	@Override
 	public String toString() {
 		return "ReservationRequest [flightId=" + flightId + ", passengerFirstName=" + passengerFirstName
 				+ ", passengerLastName=" + passengerLastName + ", passengerEmail=" + passengerEmail
-				+ ", passengerPhone=" + passengerPhone + ", nameOnTheCard=" + nameOnTheCard + ", cardNumber="
-				+ cardNumber + ", expirationMonth=" + expirationMonth + ", expirationYear=" + expirationYear
-				+ ", securityCode=" + securityCode + ", latitude=" + latitude + ", longitude=" + longitude + "]";
+				+ ", passengerPhone=" + passengerPhone + ", referenceId=" + referenceId + ", accountNumber="
+				+ accountNumber + ", nameOnTheCard=" + nameOnTheCard + ", cardNumber=" + cardNumber
+				+ ", expirationMonth=" + expirationMonth + ", expirationYear=" + expirationYear + ", securityCode="
+				+ securityCode + ", latitude=" + latitude + ", longitude=" + longitude + "]";
 	}
-	
+
 }
